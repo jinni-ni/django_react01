@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>Instagram / Post list</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <form action="" method="get">
+        <input type="text" name="q" value="{{ q }}" />
+        <input type="submit" value="검색"/>
+    </form>
+    <table class="table table-bordered table-hover">
+        <tbody>
+            {% for post in post_list %}
+                <tr>
+                    <td>
+                        {% if post.photo %}
+                            <img src="{{ post.photo.url }}" style="width:100px;"/>
+                        {% else %}
+                            No photo
+                        {% endif %}
+                    </td>
+                    <td>{{ post.message }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
