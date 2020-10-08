@@ -14,8 +14,10 @@ class Post(models.Model):
     # 삭제 해야 된다면
     # ImageField를 Custom 해서 파일 삭제
     # 배치를 통해서 삭제 하는 방법
+
     # uplaod_to 는 함수를 지정 할 수 있음 -> 파일 경로를 지정
     photo = models.ImageField(blank=True, upload_to='instagram/post/%Y/%m/%d')
+    tag_set = models.ManyToManyField('Tag', blank=True)
     is_public = models.BooleanField(default=False, verbose_name='공개여부')
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
@@ -37,3 +39,9 @@ class Comment(models.Model):
     message = models.TextField()
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50,unique=True)
+    # post_set
+    def __str__(self):
+        return self.name

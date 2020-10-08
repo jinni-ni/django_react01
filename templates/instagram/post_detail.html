@@ -1,0 +1,9 @@
+<h2>Author : {{ post.author }}</h2>
+
+{% if post.photo %}
+    <img src="{{ post.photo.url }}" style="width:100px"/>
+{% else %}
+    <h3>No Photo</h3>
+{% endif %}
+
+{{ post.message }}
