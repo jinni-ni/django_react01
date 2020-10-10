@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # third apps
     'django_extensions',
     'debug_toolbar',
+    'bootstrap4',
 
     # locals apps
     'blog1',
@@ -66,6 +67,7 @@ ROOT_URLCONF = 'askacademy.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # File system template Loader
         'DIRS': [os.path.join(BASE_DIR, 'templates')]
         ,
         'APP_DIRS': True,

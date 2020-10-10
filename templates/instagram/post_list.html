@@ -1,12 +1,12 @@
-<!doctype html>
-<html lang="ko">
-<head>
-    <meta charset="utf-8" />
-    <title>Instagram / Post list</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-</head>
-<body>
-    <form action="" method="get">
+{% extends "instagram/layout.html" %}
+{% load bootstrap4 %}
+
+{% block title %}
+    Instagram / Post list
+{% endblock title %}
+
+{% block content %}
+     <form action="" method="get">
         <input type="text" name="q" value="{{ q }}" />
         <input type="submit" value="검색"/>
     </form>
@@ -14,6 +14,7 @@
         <tbody>
             {% for post in post_list %}
                 <tr>
+                    <td> {{ post.pk }}</td>
                     <td>
                         {% if post.photo %}
                             <img src="{{ post.photo.url }}" style="width:100px;"/>
@@ -21,11 +22,21 @@
                             No photo
                         {% endif %}
                     </td>
-                    <td>{{ post.message }}</td>
+                    <td>
+{#                        <a href="/instagram/{{ post.pk }}/" />#}
+{#                        <a href="{% url 'instagram:post_detail' post.pk %}"/>#}
+                        <a href="{{ post.get_absolute_url }}"/>
+                            {{ post.message }}
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
-</body>
-</html>
+{#    {{ is_paginated }}#}
+{#    {{ page_obj }}#}
+    {% if is_paginated %}
+        {% bootstrap_pagination page_obj size="small" justify_content="center" %}
+    {% endif %}
+{% endblock content %}
