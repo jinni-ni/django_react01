@@ -1,11 +1,50 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, View, ArchiveIndexView, YearArchiveView
 from django.http import HttpResponse, HttpRequest, Http404
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Post
+from .forms import PostForm
 
+@login_required
+def post_edit(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            # request.user 를 사용하려면 필수로  login 되어 있어야 함 -> @login_required 사용
+            post.author = request.user
+            post.save()
+            # post = form.save(commit=False)
+            # post.save()
+            return redirect(post)
+    else:
+        form = PostForm(instance=post)
+
+    return render(request, 'instagram/post_new.html', {
+        'form': form,
+    })
+
+
+# @csrf_exempt
+def post_new(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save()
+            # post = form.save(commit=False)
+            # post.save()
+            return redirect(post)
+    else:
+        form = PostForm()
+
+    return render(request, 'instagram/post_new.html',{
+        'form' : form,
+    })
 
 # Create your views here.
 # @login_required

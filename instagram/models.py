@@ -10,10 +10,17 @@ from django.conf import settings
 # Create your models here.
 from django.urls import reverse
 
+# validator 는 직접 구현하면 migration 시 오류가 날 수 있기 때문에
+# 기본으로 지원되는 validator 사용 권장
+from django.core.validators import MinLengthValidator
+
+
 
 class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    message = models.TextField()
+    message = models.TextField(
+        validators=[MinLengthValidator(10)]
+    )
     # 삭제 해야 된다면
     # ImageField를 Custom 해서 파일 삭제
     # 배치를 통해서 삭제 하는 방법
