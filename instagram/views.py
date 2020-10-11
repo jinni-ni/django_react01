@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
@@ -8,9 +9,25 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Post
 from .forms import PostForm
 
+def post_delete(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request,'포스팅 삭제했습니다.')
+        return redirect('instagram:post_list')
+    return render(request, 'instagram/post_confirm_delete.html',{
+        'post':post,
+    })
+
 @login_required
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
+
+    if post.author != request.user:
+        messages.error(request, '작성자만 수정할 수 있습니다.')
+        # post detail 로 이동, get_absolute_url
+        return redirect(post)
 
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, instance=post)
@@ -19,6 +36,7 @@ def post_edit(request, pk):
             # request.user 를 사용하려면 필수로  login 되어 있어야 함 -> @login_required 사용
             post.author = request.user
             post.save()
+            messages.success(request, '포스팅 수정 완료')
             # post = form.save(commit=False)
             # post.save()
             return redirect(post)
@@ -27,17 +45,22 @@ def post_edit(request, pk):
 
     return render(request, 'instagram/post_new.html', {
         'form': form,
+        'post': post,
     })
 
 
 # @csrf_exempt
+@login_required
 def post_new(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
-            post = form.save()
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
             # post = form.save(commit=False)
             # post.save()
+            messages.success(request,'포스팅 저장 완료')
             return redirect(post)
     else:
         form = PostForm()
@@ -53,6 +76,8 @@ def post_new(request):
 #     q = request.GET.get('q', '')
 #     if q:
 #         qs = qs.filter(message__icontains=q)
+#
+#     # messages.info(request,'messages 테스트')
 #     return render(request, 'instagram/post_list.html',{
 #         'post_list' : qs,
 #         'q' : q,
@@ -70,6 +95,8 @@ class PostListView(LoginRequiredMixin, ListView):
     model = Post
     paginate_by = 10
 post_list = PostListView.as_view()
+
+
 # def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
 #     # try:
 #     #     post = Post.objects.get(pk=pk) #DoesNotExist

@@ -148,3 +148,10 @@ INTERNAL_IPS = [
 
 # 기본
 AUTH_USER_MODEL = 'auth.User'
+
+from django.contrib.messages import constants as messages_contants
+
+MESSAGE_TAGS = {
+    messages_contants.DEBUG : 'secondary',
+    messages_contants.ERROR : 'danger',
+}
