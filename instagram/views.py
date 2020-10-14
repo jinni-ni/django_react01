@@ -1,73 +1,107 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, DetailView, View, ArchiveIndexView, YearArchiveView
+from django.views.generic import ListView, DetailView, View, ArchiveIndexView, YearArchiveView, CreateView, UpdateView, \
+    DeleteView
 from django.http import HttpResponse, HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Post
 from .forms import PostForm
 
-def post_delete(request, pk):
-    post = get_object_or_404(Post, pk=pk)
 
-    if request.method == 'POST':
-        post.delete()
-        messages.success(request,'포스팅 삭제했습니다.')
-        return redirect('instagram:post_list')
-    return render(request, 'instagram/post_confirm_delete.html',{
-        'post':post,
-    })
+class PostDeleveView(LoginRequiredMixin, DeleteView):
+    model = Post
+    success_url = reverse_lazy('instagram:post_list')
 
-@login_required
-def post_edit(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+post_delete = PostDeleveView.as_view()
+#
+# def post_delete(request, pk):
+#     post = get_object_or_404(Post, pk=pk)
+#
+#     if request.method == 'POST':
+#         post.delete()
+#         messages.success(request,'포스팅 삭제했습니다.')
+#         return redirect('instagram:post_list')
+#     return render(request, 'instagram/post_confirm_delete.html',{
+#         'post':post,
+#     })
 
-    if post.author != request.user:
-        messages.error(request, '작성자만 수정할 수 있습니다.')
-        # post detail 로 이동, get_absolute_url
-        return redirect(post)
+# @login_required -> LoginRequiredMixin
+class PostUpdateView(LoginRequiredMixin,UpdateView):
+    model = Post
+    form_class = PostForm
 
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES, instance=post)
-        if form.is_valid():
-            post = form.save(commit=False)
-            # request.user 를 사용하려면 필수로  login 되어 있어야 함 -> @login_required 사용
-            post.author = request.user
-            post.save()
-            messages.success(request, '포스팅 수정 완료')
-            # post = form.save(commit=False)
-            # post.save()
-            return redirect(post)
-    else:
-        form = PostForm(instance=post)
+    def form_valid(self, form):
+        messages.success(self.request, '포스팅을 수정 했습니다.')
+        return super().form_valid(form)
 
-    return render(request, 'instagram/post_new.html', {
-        'form': form,
-        'post': post,
-    })
+post_edit = PostUpdateView.as_view()
+
+#
+# @login_required
+# def post_edit(request, pk):
+#     post = get_object_or_404(Post, pk=pk)
+#
+#     if post.author != request.user:
+#         messages.error(request, '작성자만 수정할 수 있습니다.')
+#         # post detail 로 이동, get_absolute_url
+#         return redirect(post)
+#
+#     if request.method == 'POST':
+#         form = PostForm(request.POST, request.FILES, instance=post)
+#         if form.is_valid():
+#             post = form.save(commit=False)
+#             # request.user 를 사용하려면 필수로  login 되어 있어야 함 -> @login_required 사용
+#             post.author = request.user
+#             post.save()
+#             messages.success(request, '포스팅 수정 완료')
+#             # post = form.save(commit=False)
+#             # post.save()
+#             return redirect(post)
+#     else:
+#         form = PostForm(instance=post)
+#
+#     return render(request, 'instagram/post_new.html', {
+#         'form': form,
+#         'post': post,
+#     })
 
 
-# @csrf_exempt
-@login_required
-def post_new(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            # post = form.save(commit=False)
-            # post.save()
-            messages.success(request,'포스팅 저장 완료')
-            return redirect(post)
-    else:
-        form = PostForm()
+class PostCreateView(CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'instagram/post_new.html'
 
-    return render(request, 'instagram/post_new.html',{
-        'form' : form,
-    })
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.author = self.request.user
+        messages.success(self.request, '포스팅을 저장했습니다.')
+        return super().form_valid(form)
+
+post_new = PostCreateView.as_view()
+
+# # @csrf_exempt
+# @login_required
+# def post_new(request):
+#     if request.method == 'POST':
+#         form = PostForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             post = form.save(commit=False)
+#             post.author = request.user
+#             post.save()
+#             # post = form.save(commit=False)
+#             # post.save()
+#             messages.success(request,'포스팅 저장 완료')
+#             return redirect(post)
+#     else:
+#         form = PostForm()
+#
+#     return render(request, 'instagram/post_new.html',{
+#         'form' : form,
+#     })
 
 # Create your views here.
 # @login_required
